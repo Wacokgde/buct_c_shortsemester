@@ -2,29 +2,30 @@
 #include "stdlib.h"
 #include "string.h"
 
-#define N 100
+#define N 100									//书籍结构体定义数量 
 
 
-void menu();
+void menu();									//主功能区						
 void list();
 void borrow();
-void update();
+void update();				
 
-void count();
+void count();									//功能函数区 
 void file_w();
+void clear(); 
 
 struct bookk
 {
-	char name[100];
-	char author[100];
-	char publisher[100];	
-	char ISBN[20];
-	int num_z;
-	int num_x;
-	char date[20];
+	char name[100];								//书名 
+	char author[100];							//作者 
+	char publisher[100];						//出版社 
+	char ISBN[20];								//ISBN号 
+	int num_z;									//馆藏数 
+	int num_x;									//可借数 
+	char date[20];								//日期(未完成作用分配) 
 };
-struct bookk book[N]={{"犹豫与迟疑","杨凯鸿","化学工业出版社","330-7-250-25025-9",3,3,"2019.7.2"}
-					,{"C语言程序设计","高敬阳","清华大学出版社","978-7-302-22204-0",3,1,"2018.4.8"}};
+struct bookk book[N]={{"犹豫与迟疑","杨凯鸿","化学工业出版社","330-7-250-25025-9",3,3,"2019.7.2"}					//书籍定义模板
+					,{"C语言程序设计","高敬阳","清华大学出版社","978-7-302-22204-0",3,1,"2018.4.8"}};				//操作在程序或文件中进行 
 
 static int bookkinds=0;
 int counter=0;
@@ -32,7 +33,7 @@ char name_r[100]={0};
  
 FILE *fp;
  
-void count() 
+void count() 													//统计书本数量,并读取文件中的书籍信息写入结构体数组 
 {
 	bookkinds=0;
 	fp=fopen("booklist.txt","r+");	
@@ -48,9 +49,8 @@ void count()
 }
 
 
-void file_w() 
+void file_w() 													//将书籍结构体的信息写入文件 
 {
-	count();
 	fp=fopen("booklist.txt","w");
 	for(int i=0;i<bookkinds+1;i++)
 	{
@@ -60,7 +60,21 @@ void file_w()
 		}	
 	}
 	fclose(fp);
-} 
+}
+
+void clear()														//整理空书籍-未完成 
+{
+	for(int i=0;i<N;i++)
+	{
+		if(book[i].num_z==0)
+		{
+			for(int j=i;j<N-1;j++)
+			{
+				book[j]=book[j+1];
+			}
+		} 
+	}
+}
 
 void menu()
 {
@@ -215,7 +229,7 @@ void update()
 	if(k==1)
 	{	
 		system("cls");
-		s=bookkinds+1;
+		s=bookkinds;
 		book[s].num_z=0;
 		book[s].num_x=0;
 		printf("请输入所添加书籍的名称 : ");
@@ -302,3 +316,4 @@ int main()
 	menu();
 }
 //printf("%s\n%s\n%s\n%s\n%d\n%d\n%s\n",book[i].name,book[i].author,book[i].publisher,book[i].ISBN,book[i].num_z,book[i].num_x,book[i].date);
+//上为输出格式方便复制 
