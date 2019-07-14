@@ -4,13 +4,16 @@
 
 #define N 100									//Êé¼®½á¹¹Ìå¶¨ÒåÊıÁ¿
 #define Nid 50
+#define Nre 100
 
 												//Ö÷¹¦ÄÜÇø
 void sign();									//µÇÂ¼  
 void menu();									//²Ëµ¥Ö÷Ò³			//ÌÆÓîìÓ					
 void list();									//ÏÔÊ¾ÊéÁĞ±í 		//Ó÷À¼ 
-void borrow();									//½èÊé 				//ºØ»³Óî 
+void borrow();									//½èÊé 				//ºØ»³Óî
+void ret(); 									//»¹Êé 
 void update();									//ĞŞ¸ÄÊéĞÅÏ¢ 		//Ñî¿­ºè 
+
 
 
 void menu_yk(); 								//ÓÎ¿ÍÄ£Ê½²Ëµ¥ 
@@ -19,6 +22,8 @@ void list_yk(); 								//ÓÎ¿ÍÄ£Ê½ÏÔÊ¾
 void count();									//¹¦ÄÜº¯ÊıÇø 
 void file_w();
 void clear(); 
+void list_print();
+void refile_w(); 
 
 struct bookk
 {
@@ -45,17 +50,30 @@ struct idd
 };
 
 struct idd id[Nid]=
-{{"2018040000","123456",2}
+{{"2018040000","123456",0}
 ,{"2018040072","qwerty",1}};
 
 
-static int bookkinds=0,id_num=0;
+struct ree													
+{
+	char retname[100];
+	char belong[20];
+	char r_query;
+};
+
+struct ree rebook[Nre]=
+{{"CÓïÑÔ³ÌĞòÉè¼Æ","2018040072",0}
+,{"²»ÒªÓÌÔ¥","2018040000",0}};
+
+
+static int bookkinds=0,id_num=0,re_num=0;
 int counter=0;
 char name_r[100]={0}; 
 int permission=0;
+char account_now[20]={0};
 
 
-FILE *fp_book,*fp_id;
+FILE *fp_book,*fp_id,*fp_re;
 
  
 void count() 													//Í³¼ÆÊé±¾ÊıÁ¿,²¢¶ÁÈ¡ÎÄ¼şÖĞµÄÊé¼®ĞÅÏ¢Ğ´Èë½á¹¹ÌåÊı×é 
@@ -87,6 +105,22 @@ void id_read() 													//Í³¼ÆÕËºÅÊıÁ¿,²¢¶ÁÈ¡ÎÄ¼şÖĞµÄÕËºÅĞÅÏ¢Ğ´Èë½á¹¹ÌåÊı×é
 		}	
 	}
 	fclose(fp_id);
+}
+
+
+void re_read() 													//Í³¼Æ½èÊéÖÖÊı,²¢¶ÁÈ¡ÎÄ¼şÖĞµÄ½èÊéĞÅÏ¢Ğ´Èë½á¹¹ÌåÊı×é 		
+{
+	re_num=0;
+	fp_re=fopen("returnlist.txt","r+");
+	for(int i=0;i<Nre;i++)
+	{
+		fscanf(fp_re,"%s%s",rebook[i].retname,rebook[i].belong); 
+		if(strlen(rebook[i].retname)!=0)
+		{
+			re_num++;
+		}	
+	}
+	fclose(fp_re);
 }
 
 
@@ -125,10 +159,23 @@ void list_print()												//²»Çå³ıÏÔÊ¾ÄÚÈİµÄÇé¿öÏÂÊä³öÊéµÄÁĞ±í
 	count();
 	for(i=0;i<bookkinds;i++)
 	{	
-		printf("%d------¡¶%s¡·\n",i+1,book[i].name);
+		printf("\t\t\t\t||%d------¡¶%s¡·\n",i+1,book[i].name);
 	}
 }
 
+
+void refile_w()												//½«»¹Êé½á¹¹ÌåµÄĞÅÏ¢Ğ´ÈëÎÄ¼ş 
+{
+	fp_re=fopen("returnlist.txt","w");
+	for(int i=0;i<Nre;i++)
+	{
+		if(strlen(rebook[i].retname)!=0)
+		{
+			fprintf(fp_re,"%s %s \n",rebook[i].retname,rebook[i].belong);	
+		}	
+	}
+	fclose(fp_re);
+}
 
 
 void sign()														//µÇÂ¼Ò³ 
@@ -138,18 +185,21 @@ void sign()														//µÇÂ¼Ò³
 	char geta[20],getp[20]; 
 	char zhanghu[2][10]={"¹ÜÀíÔ±","Ñ§Éú"}; 
 	id_read();
-	printf("*****»¶Ó­Ê¹ÓÃÍ¼Êé¹ÜÀíÏµÍ³*****\n"); 
-	printf("1 : ---- ÕËºÅµÇÂ¼\n");
-    printf("2 : ---- ÓÎ¿ÍÏµÍ³\n");
-    printf("3 : ---- ÍË³öÏµÍ³\n");
-    printf("ÊäÈëÄúĞèÒªÊ¹ÓÃµÄ¹¦ÄÜ£¬²¢°´»Ø³µ¼ü : ");
+	printf("\n\n");
+	printf("\t\t\t\t*****************************************************\n");
+	printf("\t\t\t\t*    ------------»¶Ó­Ê¹ÓÃÍ¼Êé¹ÜÀíÏµÍ³------------   *\n"); 
+	printf("\t\t\t\t*    \t\t1 : ---- ÕËºÅµÇÂ¼\t\t    *\n");
+    printf("\t\t\t\t*    \t\t2 : ---- ÓÎ¿ÍÏµÍ³\t\t    *\n");
+    printf("\t\t\t\t*    \t\t3 : ---- ÍË³öÏµÍ³\t\t    *\n");
+    printf("\t\t\t\t*****************************************************\n");
+    printf("\t\t\t\t>>>ÊäÈëÄúĞèÒªÊ¹ÓÃµÄ¹¦ÄÜ£¬²¢°´»Ø³µ¼ü : ");
 	scanf("%d",&n);
 	getchar(); 
 	if(n==1)
 	{
-		printf("ÇëÊäÈëÕÊºÅ£º");
+		printf("\n\n\n\t\t\t\tÇëÊäÈëÕÊºÅ£º");
 		scanf("%s",geta);
-		printf("ÇëÊäÈëÃÜÂë£º");
+		printf("\t\t\t\tÇëÊäÈëÃÜÂë£º");
 		scanf("%s",getp);
 		for(int i=0;i<id_num;i++)
 		{
@@ -159,26 +209,28 @@ void sign()														//µÇÂ¼Ò³
 				if(strcmp(getp,id[i].password)==0)
 				{
 					permission=id[i].perm; 
-					printf("%sµÇÂ¼³É¹¦ ! \nÊäÈëÈÎÒâ×Ö·û½øÈë²Ëµ¥ : ",zhanghu[i]);
+					strcpy(account_now,id[i].account);
+					printf("\t\t\t\t%sµÇÂ¼³É¹¦ ! \n\t\t\t\tÊäÈëÈÎÒâ×Ö·û½øÈë²Ëµ¥ : ",zhanghu[i]);
 					scanf("%s"); 
 					menu();
 				}
 				else
 				{
-					printf("ÃÜÂë´íÎó,ÇëÖØĞÂµÇÂ¼ ! \nÊäÈëÈÎÒâ×Ö·û·µ»ØµÇÂ¼ : ");	
+					printf("\t\t\t\t>>>ÃÜÂë´íÎó,ÇëÖØĞÂµÇÂ¼ ! \n\t\t\t\t>>>ÊäÈëÈÎÒâ×Ö·û·µ»ØµÇÂ¼ : ");
+					scanf("%s");	
 					sign();
 				}
 			}
 		} 
 		if(a==0) 
 		{
-			printf("ÕËºÅ²»´æÔÚ,ÇëÖØĞÂµÇÂ¼,»ò×ÉÑ¯Í¼Êé¹ÜÀíÔ±¿ªÍ¨ÕËºÅ ! \nÊäÈëÈÎÒâ×Ö·û·µ»ØµÇÂ¼ : \n");
+			printf("\t\t\t\t>>>ÕËºÅ²»´æÔÚ,ÇëÖØĞÂµÇÂ¼,»ò×ÉÑ¯Í¼Êé¹ÜÀíÔ±¿ªÍ¨ÕËºÅ ! \n\t\t\t\t>>>ÊäÈëÈÎÒâ×Ö·û·µ»ØµÇÂ¼ : \n");
 			sign();
 		}
 	}
 	else if(n==2)
 	{
-		printf("È·¶¨Ê¹ÓÃÓÎ¿ÍµÇÂ¼,°´yÈ·ÈÏ,ÊäÈëÆäËû×Ö·û»Øµ½µÇÂ¼Ò³Ãæ : ");
+		printf("\n\n\n\t\t\t\tÈ·¶¨Ê¹ÓÃÓÎ¿ÍµÇÂ¼,°´yÈ·ÈÏ,ÊäÈëÆäËû×Ö·û»Øµ½µÇÂ¼Ò³Ãæ : ");
 		scanf("%s",&a);
 		if(a=='Y'||a=='y')
 		{
@@ -206,18 +258,21 @@ void menu()														//²Ëµ¥Ò³
 {
 	system("cls"); 
 	int x;
-	printf("1 : ---- ²é¿´Êé¼®Çåµ¥\n");
-	printf("2 : ---- ½èÔÄÊé¼®\n");
+	printf("\n\n\t\t\t\t*******************************************************\n");
+	printf("\t\t\t\t*1 : ---- ²é¿´Êé¼®Çåµ¥                                *\n");
+	printf("\t\t\t\t*2 : ---- ½èÔÄÊé¼®                                    *\n");
+	printf("\t\t\t\t*3 : ---- ¹é»¹Êé¼®                                    *\n");
 	if(permission==0)
 	{
-		printf("3 : ---- ĞŞ¸ÄÍ¼ÊéĞÅÏ¢\n");	
+		printf("\t\t\t\t*4 : ---- ĞŞ¸ÄÍ¼ÊéĞÅÏ¢                                *\n");	
 	}
 	else if(permission==1)
 	{
-		printf("3 : ---- ĞŞ¸ÄÍ¼ÊéĞÅÏ¢(½ö¹ÜÀíÔ±¿ÉÓÃ)\n");
+		printf("\t\t\t\t*4 : ---- ĞŞ¸ÄÍ¼ÊéĞÅÏ¢(½ö¹ÜÀíÔ±¿ÉÓÃ)                  *\n");
 	}
-	printf("4 : ---- ÍË³ö³ÌĞò\n");
-	printf("ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
+	printf("\t\t\t\t*5 : ---- ÍË³ö³ÌĞò                                    *\n");
+	printf("\t\t\t\t*******************************************************\n");
+	printf("\t\t\t\t>>>ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
 	scanf("%d",&x);
 	getchar();
 	if(x==1)
@@ -230,10 +285,28 @@ void menu()														//²Ëµ¥Ò³
 	}
 	else if(x==3)
 	{
+		ret();
+	}
+	else if(x==4)
+	{
 		if(permission==1)
 		{
 			system("cls"); 
-			printf("·Ç¹ÜÀíÔ±ÕËºÅ,ÎŞ·¨ĞŞ¸Ä ! \nÈçÓĞĞèÇóÇë×ÉÑ¯Í¼Êé¹ÜÀíÔ± ! \n°´ÈÎÒâ¼ü·µ»Ø²Ëµ¥ : ");
+			printf("\t\t\t**************************************************************************\n");
+			printf("\t\t\t*********************************   **************************************\n");
+			printf("\t\t\t*******************************       ************************************\n");
+			printf("\t\t\t*******************************       ************************************\n");
+			printf("\t\t\t*******************************       ************************************\n");
+			printf("\t\t\t********************************     *************************************\n");
+			printf("\t\t\t********************************     *************************************\n");
+			printf("\t\t\t*********************************   **************************************\n");
+			printf("\t\t\t********************************** ***************************************\n");
+			printf("\t\t\t********************************** ***************************************\n");
+			printf("\t\t\t**************************************************************************\n");
+			printf("\t\t\t*********************************   **************************************\n");
+			printf("\t\t\t*********************************   **************************************\n");
+			printf("\t\t\t**************************************************************************\n");
+			printf("\t\t\t·Ç¹ÜÀíÔ±ÕËºÅ,ÎŞ·¨ĞŞ¸Ä ! \n\t\t\t\t\t\t\tÈçÓĞĞèÇóÇë×ÉÑ¯Í¼Êé¹ÜÀíÔ± ! \n\t\t\t\t\t\t\t°´ÈÎÒâ¼ü·µ»Ø²Ëµ¥ : ");
 			scanf("%s"); 
 			menu();
 		}
@@ -242,7 +315,7 @@ void menu()														//²Ëµ¥Ò³
 			update();
 		}
 	}
-	else if(x==4)
+	else if(x==5)
 	{
 		exit(0);
 	}
@@ -257,11 +330,14 @@ void menu_yk() 													//ÓÃÓÚÓÎ¿ÍÄ£Ê½µÄ²Ëµ¥-¸ôÀëÖ÷²Ëµ¥±£Ö¤°²È«
 {
 	system("cls"); 
 	int x;
-	printf("ÓÎ¿ÍÕËºÅµÇÂ¼³É¹¦ ! \n½ö¿É²é¿´Êé¼®Çåµ¥\n");
-	printf("1 : ---- ²é¿´Êé¼®Çåµ¥\n");
-	printf("2 : ---- »Øµ½µÇÂ¼½çÃæ\n");
-	printf("3 : ---- ÍË³ö³ÌĞò\n");
-	printf("ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
+	printf("\n\n\t\t\t\t*********************************************************\n");
+	printf("\t\t\t\t**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**\n");
+	printf("\t\t\t\t*|     \t\tÓÎ¿ÍÕËºÅµÇÂ¼³É¹¦ !                     |*\n\t\t\t\t**     \t\t½ö¿É²é¿´Êé¼®Çåµ¥                       **\n");
+	printf("\t\t\t\t*|     \t\t1 : ---- ²é¿´Êé¼®Çåµ¥                  |*\n");
+	printf("\t\t\t\t**     \t\t2 : ---- »Øµ½µÇÂ¼½çÃæ                  **\n");
+	printf("\t\t\t\t*|     \t\t3 : ---- ÍË³ö³ÌĞò                      |*\n");
+	printf("\t\t\t\t**-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**\n");
+	printf("\t\t\t\t>>>ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
 	scanf("%d",&x);
 	getchar();
 	if(x==1)
@@ -288,11 +364,13 @@ void list()														//Êé¼®Çåµ¥Ò³
 	int i;
 	system("cls");
 	count();
+	printf("\n\n\t\t\t\t****************************\n");
 	for(i=0;i<bookkinds;i++)
 	{	
-		printf("%d------¡¶%s¡·\n",i+1,book[i].name);
+		printf("\t\t\t\t||%d------¡¶%s¡·\n",i+1,book[i].name);	
 	}
-	printf("°´ÈÎÒâ¼ü»Øµ½Ö÷½çÃæ : ");
+	printf("\t\t\t\t****************************\n");
+	printf("\t\t\t\t>>>°´ÈÎÒâ¼ü»Øµ½Ö÷½çÃæ : ");
 	scanf("%s");
 	menu();
 }
@@ -302,11 +380,13 @@ void list_yk()													//ÓÎ¿ÍÄ£Ê½µÄÊé¼®Çåµ¥Ò²,ÓÃÓÚ»Øµ½ÓÎ¿ÍÄ£Ê½Ö÷²Ëµ¥,±ÜÃâÈ¨Ï
 	int i;
 	system("cls");
 	count();
+	printf("\n\n\t\t\t\t****************************\n");
 	for(i=0;i<bookkinds;i++)
 	{	
-		printf("%d------¡¶%s¡·\n",i+1,book[i].name);
+		printf("\t\t\t\t||%d------¡¶%s¡·\n",i+1,book[i].name);
 	}
-	printf("°´ÈÎÒâ¼ü»Øµ½Ö÷½çÃæ : ");
+	printf("\t\t\t\t****************************\n");
+	printf("\t\t\t\t>>>°´ÈÎÒâ¼ü»Øµ½Ö÷½çÃæ : ");
 	scanf("%s");
 	menu_yk();
 } 
@@ -320,7 +400,7 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 		book[i].f_query=0;	
 	} 
 	int zt=0,kz=0,bbb=0;
-	printf("ÇëÊäÈëÒª½è³öµÄÊé¼®(¿ÉÄ£ºı²éÑ¯) : ");
+	printf(">>>ÇëÊäÈëÒª½è³öµÄÊé¼®(¿ÉÄ£ºı²éÑ¯) : ");
 	scanf("%s",name_r);
 	int lens=strlen(name_r);
 	char b[bookkinds][100][lens+1];
@@ -339,20 +419,23 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 			b[u][i][lens]=0; 
 		}
 	}
-		
+	
+	printf("*************************************\n");
+	printf("\t\tÊéÃû\t\t×÷Õß\t\t\t³ö°æÉç\t\t¹İ²ØÊı\t¿É½èÊı\n");	
 	for(int i=0;i<bookkinds;i++)										//Ä£ºı²éÑ¯ 
 	{
 		for(int k=0;k<strlen(book[i].name);k++)
 		{
 			if(strcmp(name_r,b[i][k])==0)
 			{
-				printf("%d--------%s\n",i+1,book[i].name);
+				printf("  %d--------%s\t\t%s\t\t%s\t\t%d\t%d\n",i+1,book[i].name,book[i].author,book[i].publisher,book[i].num_z,book[i].num_x);
 				book[i].f_query=1; 
 				zt=1;
 				break; 
 			}
 		}	
 	}
+
 	
 	if(lens>=4)															//ÔÚÊäÈë³¤¶È´óÓÚ2¸öºº×ÖÊ±¶Ô×÷ÕßÓë³ö°æÉçÒ²½øĞĞÄ£ºı²éÑ¯ 
 	{
@@ -378,7 +461,7 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 			{
 				if(strcmp(name_r,b[i][k])==0&&book[i].f_query!=1)
 				{
-					printf("%d--------%s\n",i+1,book[i].name);
+					printf("  %d--------%s\t\t%s\t\t%s\t\t%d\t%d\n",i+1,book[i].name,book[i].author,book[i].publisher,book[i].num_z,book[i].num_x);
 					book[i].f_query=1; 
 					zt=1;
 					break; 
@@ -408,7 +491,7 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 			{
 				if(strcmp(name_r,b[i][k])==0&&book[i].f_query!=1)
 				{
-					printf("%d--------%s\n",i+1,book[i].name);
+					printf("  %d--------%s\t\t%s\t\t%s\t\t%d\t%d\n",i+1,book[i].name,book[i].author,book[i].publisher,book[i].num_z,book[i].num_x);
 					book[i].f_query=1; 
 					zt=1;
 					break; 
@@ -416,10 +499,11 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 			}	
 		}
 	}
-
+	printf("*************************************\n");
+	
 	if(zt==1)
 	{
-		printf("ÇëÊäÈëÊé¼®±àºÅÈ·ÈÏ(ÊäÈë0·µ»ØÖ÷²Ëµ¥) : "); 
+		printf(">>>ÇëÊäÈëÊé¼®±àºÅÈ·ÈÏ(ÊäÈë0·µ»ØÖ÷²Ëµ¥) : "); 
 		scanf("%d",&kz); 
 		getchar();
 		if(kz==0)
@@ -430,22 +514,29 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 		if(book[kz].f_query!=1)
 		{
 			system("cls");
-			printf("ĞòºÅÖ¸ÏòÁË²»ÕıÈ·µÄÊé¼®,°´ÈÎÒâ¼ü·µ»ØÉÏ²ã²Ëµ¥ : "); 
+			printf("\t\t\t\t>>>ĞòºÅÖ¸ÏòÁË²»ÕıÈ·µÄÊé¼®,°´ÈÎÒâ¼ü·µ»ØÉÏ²ã²Ëµ¥ : "); 
 			scanf("%s");
 			borrow(); 
 		}
 		system("cls");
-		printf("ÊéÃû : %s\n×÷Õß : %s\n³ö°æÉç : %s\nISBN : %s\n¹İ²ØÊı : %d\n¿É½èÊı : %d\nÇëºË¶ÔÊé¼®ĞÅÏ¢²¢È·ÈÏÊÇ·ñ½èÊé(Y/N)",
+		printf("\n\n\t\t\t\t*********************************\n");
+		printf("\t\t\t\t||ÊéÃû : %s\n\t\t\t\t||×÷Õß : %s\n\t\t\t\t||³ö°æÉç : %s\n\t\t\t\t||ISBN : %s\n\t\t\t\t||¹İ²ØÊı : %d\n\t\t\t\t||¿É½èÊı : %d\n",
 		book[kz].name,book[kz].author,book[kz].publisher,book[kz].ISBN,book[kz].num_z,book[kz].num_x);
+		printf("\t\t\t\t*********************************\n");
+		printf("\t\t\t\t>>>ÇëºË¶ÔÊé¼®ĞÅÏ¢²¢È·ÈÏÊÇ·ñ½èÊé(Y/N)");
 		scanf("%c",&bbb);
 		getchar();  
 		if(bbb=='Y'||bbb=='y')
 		{
 			if(book[kz].num_x>0)
 			{
-				printf("½èÊé³É¹¦!\nÇëÔÚ¹æ¶¨ÆÚÏŞÄÚ»¹Êé!\n¼ÌĞø½èÊéÇë°´y²¢»Ø³µ,°´ÆäËûÈÎÒâ¼ü»Øµ½Ö÷Ò³ : ");
-				book[kz].num_x -= 1;				//½èÊé³É¹¦,¼õÈ¥ÏÖÓĞÍ¼ÊéÒ»±¾ 
+				printf("\t\t\t\t>>>½èÊé³É¹¦!\n\t\t\t\t>>>ÇëÔÚ¹æ¶¨ÆÚÏŞÄÚ»¹Êé!\n\t\t\t\t>>>¼ÌĞø½èÊéÇë°´y²¢»Ø³µ,°´ÆäËûÈÎÒâ¼ü»Øµ½Ö÷Ò³ : ");
+				book[kz].num_x -= 1;				//½èÊé³É¹¦,¼õÈ¥ÏÖÓĞÍ¼ÊéÒ»±¾
 				file_w();							//²Ù×÷Ğ´ÈëÎÄ¼ş 
+				re_read();
+				strcpy(rebook[re_num].retname,book[kz].name);
+				strcpy(rebook[re_num].belong,account_now);
+				refile_w();
 				scanf("%c",&bbb); 
 				getchar();
 				if(bbb=='Y'||bbb=='y')
@@ -460,9 +551,11 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 			else
 			{
 				system("cls");
-				printf("·Ç³£±§Ç¸,½èÊéÊ§°Ü,Í¼Êé¿â´æ²»×ã,ÇëÁªÏµÍ¼Êé¹ÜÀíÔ±²¹³äÍ¼Êé\n");
-				printf("1 : -------- ¼ÌĞø½èÊé\n2 : -------- »Øµ½Ö÷Ò³\n");
-				printf("ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
+				printf("\n\n\t\t\t\t>>>·Ç³£±§Ç¸,½èÊéÊ§°Ü,Í¼Êé¿â´æ²»×ã,ÇëÁªÏµÍ¼Êé¹ÜÀíÔ±²¹³äÍ¼Êé\n");		
+				printf("\t\t\t\t*********************************\n");
+				printf("\t\t\t\t||1: -------- ¼ÌĞø½èÊé\n\t\t\t\t||2: -------- »Øµ½Ö÷Ò³\n");
+				printf("\t\t\t\t*********************************\n");
+				printf("\t\t\t\t>>>ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
 				scanf("%d",&bbb);
 				getchar();
 				if(bbb==1)
@@ -478,8 +571,10 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 		else if(bbb=='N'||bbb=='n')
 		{
 			system("cls");
-			printf("1 : -------- ¼ÌĞø½èÊé\n2 : -------- »Øµ½Ö÷Ò³\n");
-			printf("ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
+			printf("\n\n\t\t\t\t*********************************\n");
+			printf("\t\t\t\t||1: -------- ¼ÌĞø½èÊé\n\t\t\t\t||2: -------- »Øµ½Ö÷Ò³\n");
+			printf("\t\t\t\t*********************************\n");
+			printf("\t\t\t\t>>>ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
 			scanf("%d",&bbb);
 			getchar();
 			if(bbb==1)
@@ -494,7 +589,7 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 	}
 	else
 	{
-		printf("Î´²éÑ¯µ½ÀàËÆÍ¼Êé,°´Y»Ø³µ¼ÌĞø²éÑ¯,°´ÆäËûÈÎÒâ¼ü»Øµ½Ö÷Ò³ : "); 
+		printf(">>>Î´²éÑ¯µ½ÀàËÆÍ¼Êé,°´Y»Ø³µ¼ÌĞø²éÑ¯,°´ÆäËûÈÎÒâ¼ü»Øµ½Ö÷Ò³ : "); 
 		scanf("%s",&bbb);
 		if(bbb=='Y'||bbb=='y')
 		{
@@ -507,12 +602,95 @@ void borrow()															//·¢ÏÖbug ÊäÈë³¤±ØĞëÑÏ¸ñĞ¡ÓÚÊéÃû ------ÒÑ½â¾ö
 	}	
 }
 
+
+
+void ret()
+{
+	system("cls");
+	int zt=0,kz=0;
+	char bbb=0; 
+	re_read();
+	for(int i=0;i<Nre;i++)
+	{
+		rebook[i].r_query=0;
+	}
+	for(int i=0;i<Nre;i++)																	//aaaaaaaaa yu pan duan
+	{
+		if(strcmp(rebook[i].belong,account_now)==0)
+		{
+			zt=1;
+		}
+	}
+	if(zt!=1)
+	{
+		system("cls");
+		printf("ÄúÄ¿Ç°Ã»ÓĞĞèÒª¹é»¹µÄÊé¼® ! "); 
+		printf("Çë°´ÈÎÒâ¼ü·µ»ØÖ÷²Ëµ¥ ! ");
+		scanf("%s");
+		menu(); 
+	}
+	for(int i=0;i<Nre;i++)
+	{
+		if(strcmp(rebook[i].belong,account_now)==0)
+		{
+			rebook[i].r_query=1;
+			printf("\n%d--------%s",i+1,rebook[i].retname);
+		}
+	}
+	printf("\nÇëÊäÈëÊé¼®±àºÅÈ·ÈÏ»¹Êé(ÊäÈë0·µ»ØÖ÷²Ëµ¥) : "); 
+	scanf("%d",&kz); 
+	getchar();
+	if(kz==0)
+	{
+		menu();
+	} 
+	kz-=1;
+	if(rebook[kz].r_query!=1)
+	{
+		system("cls");
+		printf("\nĞòºÅÖ¸ÏòÁË²»ÕıÈ·µÄÊé¼®,°´ÈÎÒâ¼ü·µ»ØÉÏ²ã²Ëµ¥ : "); 
+		scanf("%s");
+		ret(); 
+	}
+	else
+	{
+		for(int i=0;i<Nre;i++)
+		{
+			if(strcmp(rebook[kz].retname,book[i].name)==0)
+			{
+				book[i].num_x+=1;
+			}	
+		}
+		file_w();
+		for(int i=kz;i<Nre-1;i++)
+		{
+			rebook[i]=rebook[i+1];
+		}
+		refile_w();
+		printf("»¹Êé³É¹¦!");
+		printf("°´y¼ÌĞø»¹Êé,°´ÈÎÒâ¼ü·µ»ØÖ÷²Ëµ¥ : ");
+		scanf("%c",&bbb); 
+		getchar();
+		if(bbb=='Y'||bbb=='y')
+		{
+			ret();
+		}
+		else
+		{
+			menu();
+		}	
+	}
+}
+
+
 void update()
 {	
 	system("cls");
 	int i,k,s,m;
-	printf("1------Ìí¼ÓÒ»±¾Êé¼®ĞÅÏ¢\n2------ĞŞ¸ÄÒ»±¾Êé¼®ĞÅÏ¢\n3------É¾³ıÒ»±¾Êé¼®ĞÅÏ¢\n4------·µ»ØÉÏÒ»¼¶\n"); 
-	printf("ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
+	printf("\n\n\t\t\t\t**********************************************************\n");
+	printf("\t\t\t\t*     \t\t1------Ìí¼ÓÒ»±¾Êé¼®ĞÅÏ¢                  *\n\t\t\t\t*     \t\t2------ĞŞ¸ÄÒ»±¾Êé¼®ĞÅÏ¢                  *\n\t\t\t\t*     \t\t3------É¾³ıÒ»±¾Êé¼®ĞÅÏ¢                  *\n\t\t\t\t*     \t\t4------·µ»ØÉÏÒ»¼¶                        *\n");
+	printf("\t\t\t\t**********************************************************\n");
+	printf("\t\t\t\t>>>ÇëÊäÈëÄúÒªÊ¹ÓÃµÄ¹¦ÄÜ : ");
 	scanf("%d",&k);
 	count();
 	if(k==1)
@@ -521,23 +699,25 @@ void update()
 		s=bookkinds;
 		book[s].num_z=0;
 		book[s].num_x=0;
-		printf("ÇëÊäÈëËùÌí¼ÓÊé¼®µÄÃû³Æ : ");
+		printf("\n\n\t\t\t\t*********************************");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄÃû³Æ : ");
 		scanf("%s",book[s].name);
-		printf("\nÇëÊäÈëËùÌí¼ÓÊé¼®µÄ×÷Õß : ");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄ×÷Õß : ");
 		scanf("%s",book[s].author);
-		printf("\nÇëÊäÈëËùÌí¼ÓÊé¼®µÄ³ö°æÉç : ");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄ³ö°æÉç : ");
 		scanf("%s",book[s].publisher);
-		printf("\nÇëÊäÈëËùÌí¼ÓÊé¼®µÄISBN±àºÅ : ");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄISBN±àºÅ : ");
 		scanf("%s",book[s].ISBN);
-		printf("\nÇëÊäÈëËùÌí¼ÓÊé¼®µÄ×Ü¿â´æÁ¿ : ");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄ×Ü¿â´æÁ¿ : ");
 		scanf("%d",&book[s].num_z);
-		printf("\nÇëÊäÈëËùÌí¼ÓÊé¼®µÄÏÖÓĞ¿â´æÁ¿ : ");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄÏÖÓĞ¿â´æÁ¿ : ");
 		scanf("%d",&book[s].num_x);
-		printf("\nÇëÊäÈëËùÌí¼ÓÊé¼®µÄ½èÔÄÈÕÆÚ : ");
+		printf("\n\t\t\t\t||ÇëÊäÈëËùÌí¼ÓÊé¼®µÄÌí¼ÓÈÕÆÚ : ");
 		scanf("%s",book[s].date);
-		printf("\nÊé¼®Ìí¼Ó³É¹¦£¡");
+		printf("\n\t\t\t\t>>>Êé¼®Ìí¼Ó³É¹¦£¡");
+		printf("\n\t\t\t\t*********************************\n");
 		file_w();
-		printf("\n°´y²é¿´Êé¼®Çåµ¥£¬ÆäËüÈÎÒâ¼ü·µ»ØÖ÷½çÃæ : ");
+		printf("\t\t\t\t>>>°´y²é¿´Êé¼®Çåµ¥£¬ÆäËüÈÎÒâ¼ü·µ»ØÖ÷½çÃæ : ");
 		scanf("%s",&k);
 		if(k=='y'||k=='Y')
 		{
@@ -551,33 +731,35 @@ void update()
 	else if(k==2)
 	{	
 		system("cls");
-		printf("ÇëÊäÈëÄúÒªĞŞ¸ÄµÄÊé¼®µÄĞòºÅ(1~%d) : ",bookkinds);
+		printf("\n\n\t\t\t\t>>>ÇëÊäÈëÄúÒªĞŞ¸ÄµÄÊé¼®µÄĞòºÅ(1~%d) : ",bookkinds);
 		scanf("%d",&m);
 		if(m<1||m>bookkinds)
 		{	
-			printf("\n·¶Î§ÊäÈë´íÎó£¡°´ÈÎÒâ¼ü·µ»ØÉÏÒ»¼¶ : ");
+			printf("\t\t\t\t>>>·¶Î§ÊäÈë´íÎó£¡°´ÈÎÒâ¼ü·µ»ØÉÏÒ»¼¶ : ");
 			scanf("%s");
 			update();
 		}
 		else
 		{	
-			printf("ÇëÊäÈëËùĞŞ¸ÄµÄÊé¼®µÄÃû³Æ : ");
+			printf("\n\n\t\t\t\t*********************************");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄµÄÊé¼®µÄÃû³Æ : ");
 			scanf("%s",book[m-1].name);
-			printf("\nÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ×÷Õß : ");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ×÷Õß : ");
 			scanf("%s",book[m-1].author);
-			printf("\nÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ³ö°æÉç : ");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ³ö°æÉç : ");
 			scanf("%s",book[m-1].publisher);
-			printf("\nÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄISBN±àºÅ : ");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄISBN±àºÅ : ");
 			scanf("%s",book[m-1].ISBN);
-			printf("\nÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ×Ü¿â´æÁ¿(ÔÚ´Ë´¦ÊäÈë0¿ÉÇå³ı¸Ã±¾Í¼Êé) : ");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ×Ü¿â´æÁ¿(ÔÚ´Ë´¦ÊäÈë0¿ÉÇå³ı¸Ã±¾Í¼Êé) : n");
 			scanf("%d",&book[m-1].num_z);
-			printf("\nÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄÏÖÓĞ¿â´æÁ¿ : ");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄÏÖÓĞ¿â´æÁ¿ : ");
 			scanf("%d",&book[m-1].num_x);
-			printf("\nÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄ½èÔÄÈÕÆÚ : ");
+			printf("\n\t\t\t\t||ÇëÊäÈëËùĞŞ¸ÄÊé¼®µÄĞŞ¸ÄÈÕÆÚ : ");
 			scanf("%s",book[m-1].date);
-			printf("\nÊé¼®ĞŞ¸Ä³É¹¦£¡");
+			printf("\n\t\t\t\t||Êé¼®ĞŞ¸Ä³É¹¦£¡");
+			printf("\n\t\t\t\t*********************************\n");
 			clear();
-			printf("\n°´y²é¿´Êé¼®Çåµ¥£¬ÆäËüÈÎÒâ¼ü·µ»ØÖ÷½çÃæ : ");
+			printf("\t\t\t\t>>>°´y²é¿´Êé¼®Çåµ¥£¬ÆäËüÈÎÒâ¼ü·µ»ØÖ÷½çÃæ : ");
 			scanf("%s",&k);
 			if(k=='y'||k=='Y')
 			{
@@ -592,20 +774,23 @@ void update()
 	else if(k==3)
 	{
 		system("cls"); 
+		printf("\n\n\t\t\t\t*********************************\n");
 		list_print(); 
-		printf("ÇëÊäÈëÄúÒªÉ¾³ıµÄÊé¼®µÄĞòºÅ(1~%d),ÊäÈëÆäËûÊıÈ¡Ïû²Ù×÷ : ",bookkinds); 
+		printf("\t\t\t\t*********************************");
+		printf("\n\t\t\t\t>>>ÇëÊäÈëÄúÒªÉ¾³ıµÄÊé¼®µÄĞòºÅ(1~%d),ÊäÈëÆäËûÊıÈ¡Ïû²Ù×÷ : ",bookkinds); 
 		scanf("%d",&m);
 		getchar(); 
 		if(m>=1&&m<=bookkinds)
 		{
 			book[m-1].num_z=0;
 			clear();
+			printf("\t\t\t\t>>>É¾³ı³É¹¦!");
 		}
 		else
 		{
-			printf("È¡ÏûÉ¾³ı ! \n");
+			printf("\t\t\t\t>>>È¡ÏûÉ¾³ı ! \n");
 		} 
-		printf("°´y²é¿´Êé¼®Çåµ¥£¬ÆäËüÈÎÒâ¼ü·µ»ØÖ÷½çÃæ : ");
+		printf("\n\t\t\t\t>>>°´y²é¿´Êé¼®Çåµ¥£¬ÆäËüÈÎÒâ¼ü·µ»ØÖ÷½çÃæ : ");
 		scanf("%s",&k);
 		if(k=='y'||k=='Y')
 		{
@@ -628,6 +813,7 @@ void update()
 
 int main()
 {
+	re_read();
 	count();	
 	sign(); 
 }
